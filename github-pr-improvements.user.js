@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         GitHub PR Improvements
 // @namespace    spencewenski
-// @version      0.1
+// @version      0.2
 // @description  Improvements for the GitHub PR UI
 // @author       Spencer Ferris
 // @match        https://*.github.com/*/*/pulls?*
@@ -77,15 +77,18 @@ function buildSettingsUi(settings) {
     });
 
     return `
-<div id="${SettingsUiId}" style="margin-bottom: 1em;">
-  <input type="checkbox" ${settings.hideOldPrs ? "checked" : ""} id="hideOldPrs" name="hideOldPrs"/>
-  <label for="hideOldPrs">Hide Old PRs</label>
+<div id="${SettingsUiId}" style="margin-bottom: 1em; display: flex; flex-wrap: wrap; gap: 1em;">
+    <div style="flex: 0 1 auto;">
+        <input type="checkbox" ${settings.hideOldPrs ? "checked" : ""} id="hideOldPrs" name="hideOldPrs"/>
+        <label for="hideOldPrs">Hide Old PRs</label>
+    </div>
 
-  <select id="oldPrThreshold" name="oldPrThreshold">
-    ${thresholdOptions}
-  </select>
-  <label for="oldPrThreshold">Max PR Age</label>
-
+    <div style="flex: 0 1 auto;">
+        <select id="oldPrThreshold" name="oldPrThreshold">
+        ${thresholdOptions}
+        </select>
+        <label for="oldPrThreshold">Max PR Age</label>
+    </div>
 </div>
 `;
 }
