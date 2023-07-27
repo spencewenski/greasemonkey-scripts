@@ -9,6 +9,8 @@
 // @require      https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js
 // @grant        GM.setValue
 // @grant        GM.getValue
+// @downloadURL  https://github.com/spencewenski/greasemonkey-scripts/raw/main/github-pr-improvements.user.js
+// @updateURL    https://github.com/spencewenski/greasemonkey-scripts/raw/main/github-pr-improvements.user.js
 // ==/UserScript==
 
 /// Utils ///
