@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         GitHub PR Improvements
 // @namespace    spencewenski
-// @version      0.2
+// @version      0.3
 // @description  Improvements for the GitHub PR UI
 // @author       Spencer Ferris
-// @match        https://*.github.com/*/*/pulls?*
+// @match        https://*.github.com/*/*/pulls*
 // @require      https://code.jquery.com/jquery-3.7.0.min.js
 // @require      https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js
 // @grant        GM.setValue
@@ -122,6 +122,9 @@ function getThresholdDate(settings) {
 function removeOldPrFilter(settings) {
     let params = new URLSearchParams(window.location.search);
     let prQuery = params.get("q");
+    if (!prQuery) {
+        prQuery = "";
+    }
     let newQuery = prQuery.replace(OldPrFilterRegex, "");
     if (newQuery !== prQuery) {
         params.set("q", newQuery);
@@ -130,8 +133,12 @@ function removeOldPrFilter(settings) {
 }
 
 function addOldPrFilter(settings) {
+    // todo: use search field input instead -- this includes some default filters that aren't in the url params
     let params = new URLSearchParams(window.location.search);
     let prQuery = params.get("q");
+    if (!prQuery) {
+        prQuery = "";
+    }
     let filterMatches = prQuery.match(OldPrFilterRegex);
     let newFilterDate = getThresholdDate(settings)
     let newFilter = `updated:>=${newFilterDate}`;
@@ -175,6 +182,28 @@ function main() {
     addEventListeners();
 }
 
+// If the greasemonkey script loads before the PR UI loads, the script's UI won't be added.
+// Observe the DOM for changes and re-run `main` when it changes to ensure the script loads.
+function addMutationObserver() {
+    // Select the node that will be observed for mutations
+    const targetNode = document.getElementsByTagName('body')[0];
+
+    // Options for the observer (which mutations to observe)
+    const config = { childList: true, subtree: true };
+
+    // Callback function to execute when mutations are observed
+    const callback = (mutationList, observer) => {
+      main();
+    };
+
+    // Create an observer instance linked to the callback function
+    const observer = new MutationObserver(callback);
+
+    // Start observing the target node for configured mutations
+    observer.observe(targetNode, config);
+}
+
 $(() => {
     main();
+    addMutationObserver();
 });
