@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         GitHub PR Improvements
 // @namespace    spencewenski
-// @version      0.3
+// @version      0.4
 // @description  Improvements for the GitHub PR UI
 // @author       Spencer Ferris
 // @match        https://*.github.com/*/*/pulls*
@@ -107,6 +107,16 @@ function addSettingsUI(settings) {
 
 /// Mange the old PR filter ///
 const OldPrFilterRegex = new RegExp(/(?<prefix>updated:>=)(?<date>\d\d\d\d-\d\d-\d\d)/);
+const GitHubIssueSearchId = "js-issues-search";
+
+function getGitHubIssueSearchField() {
+    let inputElement = $("#js-issues-search");
+    if (inputElement.length <= 0) {
+        console.log("Input element not present yet.");
+        return null;
+    }
+    return inputElement[0];
+}
 
 function getThresholdDate(settings) {
     const dateFormat = "YYYY-MM-DD";
@@ -120,22 +130,30 @@ function getThresholdDate(settings) {
 }
 
 function removeOldPrFilter(settings) {
-    let params = new URLSearchParams(window.location.search);
-    let prQuery = params.get("q");
+    let inputElement = getGitHubIssueSearchField();
+    if (!inputElement) {
+        console.log("Input element not present yet.");
+        return;
+    }
+    let prQuery = inputElement.value;
     if (!prQuery) {
         prQuery = "";
     }
     let newQuery = prQuery.replace(OldPrFilterRegex, "");
     if (newQuery !== prQuery) {
+        let params = new URLSearchParams(window.location.search);
         params.set("q", newQuery);
         window.location.search = params;
     }
 }
 
 function addOldPrFilter(settings) {
-    // todo: use search field input instead -- this includes some default filters that aren't in the url params
-    let params = new URLSearchParams(window.location.search);
-    let prQuery = params.get("q");
+    let inputElement = getGitHubIssueSearchField();
+    if (!inputElement) {
+        console.log("Input element not present yet.");
+        return;
+    }
+    let prQuery = inputElement.value;
     if (!prQuery) {
         prQuery = "";
     }
@@ -152,6 +170,7 @@ function addOldPrFilter(settings) {
         newQuery = prQuery.replace(OldPrFilterRegex, newFilter);
     }
     if (newQuery !== prQuery) {
+        let params = new URLSearchParams(window.location.search);
         params.set("q", newQuery);
         window.location.search = params;
     }
