@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Graphite.dev PR UI Improvements
 // @namespace    spencewenski
-// @version      0.2
+// @version      0.3
 // @description  Improvements for the Graphite.dev PR UI
 // @author       Spencer Ferris
 // @match        https://*.graphite.dev/*
@@ -42,8 +42,28 @@ function addGitHubLink() {
 }
 /// End - GitHub PR Link ///
 
+/// PR only in a single section ///
+function hideDuplicatePrRows() {
+    const rows = $(".review-queue__section__table a");
+    if (!rows || rows.length <= 0) {
+        // No PRs found
+        return;
+    }
+    const seen = [];
+    rows.each((i, element) => {
+        const href = $(element).attr("href");
+        if (seen.indexOf(href) >= 0) {
+            $(element).hide();
+        } else {
+            seen.push(href);
+        }
+    })
+}
+/// End - PR only in a single section ///
+
 function main() {
     addGitHubLink();
+    hideDuplicatePrRows();
 }
 
 // If the greasemonkey script loads before the PR UI loads, the script's UI won't be added.
