@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Graphite.dev PR UI Improvements
 // @namespace    spencewenski
-// @version      0.3
+// @version      0.4
 // @description  Improvements for the Graphite.dev PR UI
 // @author       Spencer Ferris
 // @match        https://*.graphite.dev/*
@@ -10,6 +10,80 @@
 // @downloadURL  https://github.com/spencewenski/greasemonkey-scripts/raw/main/graphite-dev-improvements.user.js
 // @updateURL    https://github.com/spencewenski/greasemonkey-scripts/raw/main/graphite-dev-improvements.user.js
 // ==/UserScript==
+
+/// Utils ///
+function getFromLocalStorage(key, defaultValue) {
+    let value = JSON.parse(localStorage.getItem(key));
+    return (value !== undefined && value != null)
+        ? value
+        : defaultValue;
+}
+
+function writeToLocalStorage(key, value) {
+    localStorage.setItem(key, JSON.stringify(value));
+}
+/// End - Utils ///
+
+/// Settings ///
+function loadSettings() {
+    let oneSectionPerPr = localStorage.getItem("oneSectionPerPr");
+    if (oneSectionPerPr === undefined) {
+        oneSectionPerPr = true;
+    }
+    return {
+        oneSectionPerPr: getFromLocalStorage("oneSectionPerPr", true),
+    };
+}
+
+function toggleBooleanSetting(settingName, settings) {
+    if (settings[settingName] === undefined) {
+        throw new Error(`Unsupported setting name: ${settingName}`);
+    }
+    writeToLocalStorage(settingName, !settings[settingName]);
+}
+
+function updateEnumSetting(settingName, newValue, settings) {
+    if (settings[settingName] === undefined) {
+        throw new Error(`Unsupported setting name: ${settingName}`);
+    }
+    writeToLocalStorage(settingName, newValue);
+}
+/// End - Settings ///
+
+/// Settings UI ///
+const SettingsUiId = "gmSettingsUi";
+
+function settingsCheckboxChangedEventListener(event) {
+    toggleBooleanSetting(event.target.name, loadSettings());
+    updateOldPrFilter();
+}
+
+function settingsDropdownChangedEventListener(event) {
+    updateEnumSetting(event.target.name, event.target.value, loadSettings());
+    updateOldPrFilter();
+}
+
+function buildSettingsUi(settings) {
+    return `
+<div id="${SettingsUiId}" style="margin-bottom: 1em; display: flex; flex-wrap: wrap; gap: 1em;">
+    <div style="flex: 0 1 auto;">
+        <input type="checkbox" ${settings.oneSectionPerPr ? "checked" : ""} id="oneSectionPerPr" name="oneSectionPerPr"/>
+        <label for="oneSectionPerPr">One section per PR</label>
+    </div>
+</div>
+`;
+}
+
+function addSettingsUI(settings) {
+    let settingsElement = $(`#${SettingsUiId}`);
+    if (!!settingsElement && settingsElement.length > 0) {
+        // Element was already added
+        return;
+    }
+    let parent = $('[data-rbd-droppable-id="review-queue-sections"]');
+    $(parent).prepend(buildSettingsUi(settings));
+}
+/// End - Settings UI ///
 
 /// GitHub PR Link ///
 function getPrDetails() {
@@ -43,7 +117,10 @@ function addGitHubLink() {
 /// End - GitHub PR Link ///
 
 /// PR only in a single section ///
-function hideDuplicatePrRows() {
+function hideDuplicatePrRows(settings) {
+    if (!settings.oneSectionPerPr) {
+        return;
+    }
     const rows = $(".review-queue__section__table a");
     if (!rows || rows.length <= 0) {
         // No PRs found
@@ -61,9 +138,22 @@ function hideDuplicatePrRows() {
 }
 /// End - PR only in a single section ///
 
+// In order to call a GM function from elements we insert, we need to add an event listener to the element.
+function addEventListeners() {
+    let element = document.getElementById('oneSectionPerPr');
+    if (element) {
+        element.addEventListener('change', settingsCheckboxChangedEventListener, false);
+    }
+}
+
 function main() {
+    let settings = loadSettings();
+    addSettingsUI(settings);
+
     addGitHubLink();
-    hideDuplicatePrRows();
+    hideDuplicatePrRows(settings);
+
+    addEventListeners();
 }
 
 // If the greasemonkey script loads before the PR UI loads, the script's UI won't be added.
