@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Graphite.dev PR UI Improvements
 // @namespace    spencewenski
-// @version      0.1
+// @version      0.2
 // @description  Improvements for the Graphite.dev PR UI
 // @author       Spencer Ferris
 // @match        https://*.graphite.dev/*
@@ -13,7 +13,7 @@
 
 /// GitHub PR Link ///
 function getPrDetails() {
-    const matches = window.location.pathname.match(/.*\/pr\/(?<org>\w+)\/(?<repo>\w+)\/(?<prId>\w+)\/.*/)
+    const matches = window.location.pathname.match(/.*\/pr\/(?<org>[a-zA-Z0-9-_]+)\/(?<repo>[a-zA-Z0-9-_]+)\/(?<prId>[a-zA-Z0-9-_]+)\/?.*/)
     return {
         org: matches?.groups?.org,
         repo: matches?.groups?.repo,
