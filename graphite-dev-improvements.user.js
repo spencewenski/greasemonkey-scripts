@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Graphite.dev PR UI Improvements
 // @namespace    spencewenski
-// @version      0.4
+// @version      0.5
 // @description  Improvements for the Graphite.dev PR UI
 // @author       Spencer Ferris
 // @match        https://*.graphite.dev/*
@@ -111,7 +111,7 @@ function addGitHubLink() {
 
     githubLinkElement = `<a id="${GitHubLinkElementId}" href="https://github.com/${prDetails.org}/${prDetails.repo}/pull/${prDetails.prId}">(GitHub Link)</a>`;
 
-    const siblingElement = $("*[class*='PullRequestInfo_branchName']");
+    const siblingElement = $("*[class*='BranchName_branchName_body']");
     siblingElement.before(githubLinkElement)
 }
 /// End - GitHub PR Link ///
